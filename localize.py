@@ -19,7 +19,7 @@ def rank_functions(counts, total_failed):
     scores = {}
     for fn, c in counts.items():
         scores[fn] = ochiai(c["failed"], c["passed"], total_failed)
-    return sorted(scores.items(), key=lambda x: x[1], reverse=True)
+    return sorted(scores.items(), key=lambda x: (-x[1], x[0]))
 
 if __name__ == "__main__":
     results = [
