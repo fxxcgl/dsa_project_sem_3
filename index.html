@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>COMP — Spectrum-Based Fault Localization & Bug Intelligence</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&family=Space+Grotesk:wght@600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="./frontend/styles.css">
+  <link rel="stylesheet" href="./styles.css">
+</head>
+<body>
+
+  <div class="app-container">
+
+    <!-- ==========================================================================
+         LEFT SIDEBAR (MATCHES EXACT LAYOUT IN SCREENSHOT)
+         ========================================================================== -->
+    <aside class="sidebar">
+
+      <!-- Brand Header -->
+      <div class="brand-header">
+        <h1 class="brand-title">COMP</h1>
+        <span class="brand-tag">Fault Locator</span>
+      </div>
+
+      <!-- Assets / Test Suites Section -->
+      <section class="assets-section">
+        <div class="section-header">
+          <div class="section-title-wrap">
+            <span class="section-title">Assets</span>
+            <span class="section-count" id="asset-count-label">11 suites</span>
+          </div>
+          <button class="action-link-btn" id="btn-edit-suite" title="Inspect & Edit Active Test Suite">Edit</button>
+        </div>
+
+        <!-- 2-Row Thumbnail Grid (Matches visual thumbnails from screenshot) -->
+        <div class="assets-grid" id="assets-grid">
+          <!-- Dynamically populated with 10+ thumbnails + "+" add button -->
+        </div>
+      </section>
+
+      <div class="sidebar-divider"></div>
+
+      <!-- Settings Section -->
+      <section class="settings-section">
+        <div class="section-header">
+          <span class="section-title">Settings</span>
+          <button class="action-link-btn" id="btn-reset-settings" title="Reset all sliders and metrics">
+            <span style="font-size: 14px;">↺</span> Reset
+          </button>
+        </div>
+
+        <!-- Metric Formula Selection -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Spectrum Metric</span>
+            <span class="control-val-readout" id="active-metric-readout">Ochiai</span>
+          </div>
+          <div class="segmented-control" id="metric-segmented-control">
+            <button class="segment-btn active" data-metric="ochiai">Ochiai</button>
+            <button class="segment-btn" data-metric="tarantula">Tarantula</button>
+            <button class="segment-btn" data-metric="dstar">D*</button>
+            <button class="segment-btn" data-metric="jaccard">Jaccard</button>
+          </div>
+        </div>
+
+        <!-- Metric Weight Slider -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Suspicion Weight</span>
+            <span class="control-val-readout" id="weight-metric-val">1.00</span>
+          </div>
+          <input type="range" class="range-slider" id="slider-weight-metric" min="0" max="2" step="0.1" value="1.0">
+        </div>
+
+        <!-- Churn Signal Weight Slider -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Code Churn Weight</span>
+            <span class="control-val-readout" id="weight-churn-val">0.20</span>
+          </div>
+          <input type="range" class="range-slider" id="slider-weight-churn" min="0" max="1" step="0.05" value="0.2">
+        </div>
+
+        <!-- Complexity Signal Weight Slider -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>AST Complexity Weight</span>
+            <span class="control-val-readout" id="weight-comp-val">0.10</span>
+          </div>
+          <input type="range" class="range-slider" id="slider-weight-comp" min="0" max="1" step="0.05" value="0.1">
+        </div>
+
+        <!-- Arc Radius Slider (Controls the visual card arc curve) -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Arc Radius</span>
+            <span class="control-val-readout" id="arc-radius-val">360px</span>
+          </div>
+          <input type="range" class="range-slider" id="slider-arc-radius" min="200" max="550" step="10" value="360">
+        </div>
+
+        <!-- Arc Spread Angle Slider -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Arc Spread Angle</span>
+            <span class="control-val-readout" id="arc-spread-val">115°</span>
+          </div>
+          <input type="range" class="range-slider" id="slider-arc-spread" min="40" max="180" step="5" value="115">
+        </div>
+
+        <!-- Arc Rotation Offset Slider -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Arc Rotation</span>
+            <span class="control-val-readout" id="arc-rotation-val">0°</span>
+          </div>
+          <input type="range" class="range-slider" id="slider-arc-rotation" min="-90" max="90" step="1" value="0">
+        </div>
+
+        <!-- Candidate Filter -->
+        <div class="control-group">
+          <div class="control-label-row">
+            <span>Filter Candidates</span>
+          </div>
+          <select class="select-input" id="filter-candidates-select">
+            <option value="all">All Functions in Module</option>
+            <option value="suspects" selected>Suspects Only (Score > 0)</option>
+            <option value="top1">Top-1 Fault Candidate</option>
+          </select>
+        </div>
+      </section>
+
+      <!-- Active Suite Status Summary Box -->
+      <div class="suite-status-box" id="suite-status-box">
+        <div class="suite-status-header">
+          <span class="suite-status-title" id="status-suite-title">sample/calc.py</span>
+          <div class="suite-status-pills">
+            <span class="status-tag fail" id="status-fail-badge">2 Fail</span>
+            <span class="status-tag pass" id="status-pass-badge">2 Pass</span>
+          </div>
+        </div>
+        <div class="suite-status-row">
+          <span>Top Suspect:</span>
+          <strong id="status-top-suspect" style="color:#dc2626; font-family:var(--font-mono);">average()</strong>
+        </div>
+        <div class="suite-status-row">
+          <span>Ochiai Score:</span>
+          <strong id="status-top-score" style="font-family:var(--font-mono);">1.000</strong>
+        </div>
+        <button class="suite-run-btn" id="btn-run-pipeline">
+          <span>▶</span> Run Localization Pipeline
+        </button>
+      </div>
+
+    </aside>
+
+    <!-- ==========================================================================
+         MAIN CANVAS VIEWPORT (ELECTRIC BLUE PANEL WITH SIGNATURE CARD ARC)
+         ========================================================================== -->
+    <main class="main-viewport">
+      <div class="canvas-container" id="canvas-container">
+
+        <!-- Canvas Header Overlay -->
+        <header class="canvas-header">
+          <div class="canvas-meta-badge" id="canvas-meta-badge">
+            <span class="canvas-meta-dot"></span>
+            <span id="canvas-active-target-text">calc.py • 4 Functions Profiled</span>
+          </div>
+
+          <div class="canvas-actions">
+            <!-- View Mode Switcher -->
+            <div class="view-mode-toggle">
+              <button class="view-btn active" data-view="arc" id="btn-view-arc">Arc Flow</button>
+              <button class="view-btn" data-view="matrix" id="btn-view-matrix">Spectrum Matrix</button>
+              <button class="view-btn" data-view="code" id="btn-view-code">Source & Tests</button>
+            </div>
+
+            <!-- (0) EXPORT ↗ Pill Button (Exact match from screenshot) -->
+            <button class="export-pill-btn" id="btn-export">
+              <span id="export-count-badge">(1)</span>
+              <span>EXPORT</span>
+              <span class="export-pill-arrow">↗</span>
+            </button>
+          </div>
+        </header>
+
+        <!-- Canvas Interactive Stage (Renders the signature arc of cards) -->
+        <div class="canvas-stage" id="canvas-stage">
+          <div class="card-arc-wrapper" id="card-arc-wrapper">
+            <!-- Dynamically generated arc cards -->
+          </div>
+        </div>
+
+        <!-- Canvas Bottom Hints & Controls -->
+        <div class="canvas-bottom-hint">
+          <div class="hint-pill">✦ Drag or Scroll to rotate card arc</div>
+          <div class="hint-pill">✦ Click any card to inspect defect & verify fix</div>
+        </div>
+
+        <!-- Spectrum Matrix View Modal / Container -->
+        <div class="matrix-view-container" id="matrix-view-container">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="font-size:16px; font-weight:700;">Spectrum-Based Fault Localization Matrix</h3>
+            <span style="font-size:12px; color:#64748b;">$e_f$ = Failed Executing, $e_p$ = Passed Executing, $n_f$ = Failed Not Executing, $n_p$ = Passed Not Executing</span>
+          </div>
+          <table class="matrix-table" id="matrix-table">
+            <thead>
+              <tr>
+                <th>Function</th>
+                <th>Ochiai</th>
+                <th>Tarantula</th>
+                <th>D*</th>
+                <th>Jaccard</th>
+                <th>$e_f$ (Fail)</th>
+                <th>$e_p$ (Pass)</th>
+                <th>Complexity</th>
+                <th>Churn</th>
+                <th>Suspect Rank</th>
+              </tr>
+            </thead>
+            <tbody id="matrix-table-body">
+              <!-- Dynamically populated -->
+            </tbody>
+          </table>
+        </div>
+
+        <!-- Code & Tests View Container -->
+        <div class="code-view-container" id="code-view-container">
+          <div class="code-view-header">
+            <h3 style="font-size:15px; font-weight:600; color:#58a6ff;" id="code-view-filename">calc.py</h3>
+            <span style="font-size:12px; color:#8b949e;">Python Module Source & pytest Suite</span>
+          </div>
+          <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;">
+            <div>
+              <div style="font-size:12px; color:#8b949e; margin-bottom:8px; font-weight:600;">SOURCE FILE:</div>
+              <pre class="code-view-pre" id="code-view-source"></pre>
+            </div>
+            <div>
+              <div style="font-size:12px; color:#8b949e; margin-bottom:8px; font-weight:600;">TEST SUITE:</div>
+              <pre class="code-view-pre" id="code-view-tests"></pre>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </main>
+
+  </div>
+
+  <!-- ==========================================================================
+       DEEP DEFECT INSPECTOR MODAL
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modal-inspector">
+    <div class="modal-card">
+      <div class="modal-header">
+        <div>
+          <h3 class="modal-title" id="inspector-fn-title">def average(nums)</h3>
+          <span style="font-size:12px; color:var(--text-muted);" id="inspector-file-sub">calc.py • Line 7</span>
+        </div>
+        <button class="modal-close-btn" id="inspector-close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <!-- Suspicion Badge & Summary -->
+        <div style="display:flex; justify-content:space-between; align-items:center; background:#f8fafc; padding:12px 16px; border-radius:8px; border:1px solid var(--border-subtle);">
+          <div>
+            <span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Fault Likelihood</span>
+            <div style="font-size:18px; font-weight:800; font-family:var(--font-mono); color:#dc2626;" id="inspector-score-readout">1.000 (Ochiai Top Suspect)</div>
+          </div>
+          <div style="text-align:right;">
+            <span style="font-size:11px; text-transform:uppercase; color:var(--text-muted); font-weight:700;">Execution Profile</span>
+            <div style="font-size:13px; font-weight:600; color:#0f172a;" id="inspector-exec-summary">2 Failed Runs • 0 Passed Runs</div>
+          </div>
+        </div>
+
+        <!-- Mathematical SBFL Derivation -->
+        <div>
+          <h4 style="font-size:13px; font-weight:700; margin-bottom:6px;">SBFL Mathematical Derivation:</h4>
+          <div class="math-box" id="inspector-math-derivation">
+            Ochiai = ef / sqrt(total_failed * (ef + ep)) = 2 / sqrt(2 * (2 + 0)) = 1.000
+          </div>
+        </div>
+
+        <!-- Root Cause Evidence -->
+        <div>
+          <h4 style="font-size:13px; font-weight:700; margin-bottom:6px;">Root Cause & Evidence:</h4>
+          <p style="font-size:13px; line-height:1.5; color:#334155;" id="inspector-root-cause-text">
+            The mean calculation appears to be using the wrong divisor or aggregation path. Arithmetic off-by-one error.
+          </p>
+        </div>
+
+        <!-- Before / After Fix Diff -->
+        <div>
+          <h4 style="font-size:13px; font-weight:700; margin-bottom:6px;">Automated Code Fix Patch:</h4>
+          <div class="diff-box">
+            <div class="diff-line del" id="diff-del-line">- return sum(nums) / (len(nums) + 1)</div>
+            <div class="diff-line add" id="diff-add-line">+ return sum(nums) / len(nums)</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-link-btn" id="inspector-cancel-btn" style="padding:6px 14px;">Close</button>
+        <button class="suite-run-btn" id="btn-verify-fix" style="background:#16a34a; margin-top:0;">
+          <span>✓</span> Verify Fix & Re-run Tests
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       EXPORT CENTER MODAL (Triggered by (N) EXPORT ↗)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modal-export">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Export Bug Intelligence Report</h3>
+        <button class="modal-close-btn" id="export-close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size:13px; color:#475569;">
+          Generate and download evidence-based quality reports adhering to the software defect localization criteria.
+        </p>
+
+        <pre style="background:#0f172a; color:#f8fafc; padding:16px; border-radius:8px; font-family:var(--font-mono); font-size:11px; max-height:220px; overflow-y:auto; line-height:1.5;" id="export-preview-text"></pre>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-link-btn" id="btn-copy-report" style="padding:6px 14px;">Copy to Clipboard</button>
+        <button class="suite-run-btn" id="btn-download-json" style="background:#3b82f6; margin-top:0;">
+          Download JSON
+        </button>
+        <button class="suite-run-btn" id="btn-download-report" style="background:#0f172a; margin-top:0;">
+          Download Report (.md)
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       EDIT SUITE & TESTS MODAL
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modal-edit-suite">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Inspect & Edit Benchmark Suite</h3>
+        <button class="modal-close-btn" id="edit-suite-close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <div>
+          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Source Code:</label>
+          <textarea id="edit-suite-source" style="width:100%; height:130px; font-family:var(--font-mono); font-size:12px; padding:10px; border-radius:6px; border:1px solid var(--border-subtle); outline:none; resize:vertical;"></textarea>
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Test Code:</label>
+          <textarea id="edit-suite-tests" style="width:100%; height:130px; font-family:var(--font-mono); font-size:12px; padding:10px; border-radius:6px; border:1px solid var(--border-subtle); outline:none; resize:vertical;"></textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-link-btn" id="edit-suite-cancel-btn" style="padding:6px 14px;">Cancel</button>
+        <button class="suite-run-btn" id="btn-save-suite-changes" style="margin-top:0;">
+          Save & Run Localization
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ==========================================================================
+       ADD CUSTOM SUITE MODAL ("+" Button in Assets)
+       ========================================================================== -->
+  <div class="modal-backdrop" id="modal-add-custom">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h3 class="modal-title">Add Custom Python Suite / Function</h3>
+        <button class="modal-close-btn" id="add-custom-close-btn">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p style="font-size:13px; color:#475569;">
+          Add a custom function and unit tests to profile with Spectrum-Based Fault Localization.
+        </p>
+        <div>
+          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Suite Title:</label>
+          <input type="text" id="custom-suite-title" value="Custom Logic Validator" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border-subtle); font-size:13px; outline:none;">
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Python Source Function:</label>
+          <textarea id="custom-suite-source" style="width:100%; height:110px; font-family:var(--font-mono); font-size:12px; padding:10px; border-radius:6px; border:1px solid var(--border-subtle); outline:none; resize:vertical;">def compute(val):
+    if val > 10:
+        return val * 2
+    return val + 1  # Bug: should be val + 2</textarea>
+        </div>
+        <div>
+          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Tests:</label>
+          <textarea id="custom-suite-tests" style="width:100%; height:100px; font-family:var(--font-mono); font-size:12px; padding:10px; border-radius:6px; border:1px solid var(--border-subtle); outline:none; resize:vertical;">def test_above():
+    assert compute(15) == 30
+
+def test_below():
+    assert compute(5) == 7  # Fails when buggy</textarea>
+        </div>
+      </div>
+
+      <div class="modal-footer">
+        <button class="action-link-btn" id="add-custom-cancel-btn" style="padding:6px 14px;">Cancel</button>
+        <button class="suite-run-btn" id="btn-create-custom-suite" style="margin-top:0;">
+          Create & Profile Suite
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Toast Notification Notification -->
+  <div class="toast-notice" id="toast-notice">
+    <span id="toast-icon">✓</span>
+    <span id="toast-message">Success!</span>
+  </div>
+
+  <script src="./app.js"></script>
+</body>
+</html>

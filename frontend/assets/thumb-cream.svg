@@ -1,0 +1,13 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 200 200" width="100%" height="100%">
+  <defs>
+    <linearGradient id="creamGrad" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0%" stop-color="#ffffff"/>
+      <stop offset="60%" stop-color="#f1f5f9"/>
+      <stop offset="100%" stop-color="#cbd5e1"/>
+    </linearGradient>
+  </defs>
+  <rect width="200" height="200" fill="#e2e8f0"/>
+  <path d="M40 130 C60 100 110 80 155 105 C140 125 110 145 65 142 Z" fill="url(#creamGrad)"/>
+  <path d="M65 115 C90 90 140 85 160 110 C130 115 100 125 75 130 Z" fill="#ffffff"/>
+  <ellipse cx="100" cy="150" rx="55" ry="10" fill="#94a3b8" opacity="0.35"/>
+</svg>
