@@ -1,5 +1,6 @@
 import sys
 import os
+import json
 
 def trace_functions(test_func, source_file):
     called = set()
@@ -26,6 +27,11 @@ def run_all_tests(test_module, source_file):
             func = getattr(test_module, name)
             results.append(trace_functions(func, source_file))
     return results
+
+def load_trace(path):
+    with open(path) as f:
+        data = json.load(f)
+    return [(set(v["functions"]), v["passed"]) for v in data.values()]
 
 if __name__ == "__main__":
     sys.path.insert(0, "sample")
