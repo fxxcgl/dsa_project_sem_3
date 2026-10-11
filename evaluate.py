@@ -11,6 +11,11 @@ def mrr(ranks):
     total = sum(1 / r for r in ranks if r is not None)
     return total / len(ranks)
 
+def best_rank(ranked, answers):
+    found = [rank_of_bug(ranked, a) for a in answers]
+    found = [r for r in found if r is not None]
+    return min(found) if found else None
+
 if __name__ == "__main__":
     ranks = [1, 2, 1, 6, None]  # 5 bugs
     print(top_k(ranks, 1))

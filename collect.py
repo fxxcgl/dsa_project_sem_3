@@ -31,7 +31,11 @@ def run_all_tests(test_module, source_file):
 def load_trace(path):
     with open(path) as f:
         data = json.load(f)
-    return [(set(v["functions"]), v["passed"]) for v in data.values()]
+    out = []
+    for v in data.values():
+        funcs = {f for f in v["functions"] if "::<" not in f}
+        out.append((funcs, v["passed"]))
+    return out
 
 if __name__ == "__main__":
     sys.path.insert(0, "sample")
