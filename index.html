@@ -372,44 +372,87 @@
   </div>
 
   <!-- ==========================================================================
-       ADD CUSTOM SUITE MODAL ("+" Button in Assets)
+       AI TEST GENERATION & BUGGY FUNCTION PROFILER MODAL ("+" Button in Assets)
+       ========================================================================== -->
+  <!-- ==========================================================================
+       AI TEST GENERATION & BUGGY FUNCTION PROFILER MODAL ("+" Button in Assets)
        ========================================================================== -->
   <div class="modal-backdrop" id="modal-add-custom">
-    <div class="modal-card">
-      <div class="modal-header">
-        <h3 class="modal-title">Add Custom Python Suite / Function</h3>
+    <div class="modal-card" style="max-width: 720px; background: #ffffff; border: 1px solid #18181b;">
+      <div class="modal-header" style="border-bottom: 1px solid #e4e4e7; padding-bottom: 14px;">
+        <div>
+          <h3 class="modal-title" style="color: #09090b; font-size: 16px; font-weight: 700;">AI Test Synthesizer & Defect Profiler</h3>
+          <span style="font-size: 12px; color: #71717a;">Write any custom Python function, explain what it should do, and let AI generate test cases and an automated fix.</span>
+        </div>
         <button class="modal-close-btn" id="add-custom-close-btn">&times;</button>
       </div>
 
-      <div class="modal-body">
-        <p style="font-size:13px; color:#475569;">
-          Add a custom function and unit tests to profile with Spectrum-Based Fault Localization.
-        </p>
-        <div>
-          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Suite Title:</label>
-          <input type="text" id="custom-suite-title" value="Custom Logic Validator" style="width:100%; padding:8px 10px; border-radius:6px; border:1px solid var(--border-subtle); font-size:13px; outline:none;">
+      <div class="modal-body" style="gap: 14px;">
+        <!-- Function Signature / Filename -->
+        <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 12px;">
+          <div>
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #09090b; display: block; margin-bottom: 4px;">Module File Name:</label>
+            <input type="text" id="custom-suite-title" value="custom_logic.py" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #d4d4d8; font-size: 12px; font-family: var(--font-mono); outline: none;">
+          </div>
+          <div>
+            <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #09090b; display: block; margin-bottom: 4px;">Function Name:</label>
+            <input type="text" id="custom-fn-name" value="calculate" style="width: 100%; padding: 8px 10px; border-radius: 6px; border: 1px solid #d4d4d8; font-size: 12px; font-family: var(--font-mono); outline: none;">
+          </div>
         </div>
-        <div>
-          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Python Source Function:</label>
-          <textarea id="custom-suite-source" style="width:100%; height:110px; font-family:var(--font-mono); font-size:12px; padding:10px; border-radius:6px; border:1px solid var(--border-subtle); outline:none; resize:vertical;">def compute(val):
-    if val > 10:
-        return val * 2
-    return val + 1  # Bug: should be val + 2</textarea>
-        </div>
-        <div>
-          <label style="font-size:12px; font-weight:600; display:block; margin-bottom:4px;">Tests:</label>
-          <textarea id="custom-suite-tests" style="width:100%; height:100px; font-family:var(--font-mono); font-size:12px; padding:10px; border-radius:6px; border:1px solid var(--border-subtle); outline:none; resize:vertical;">def test_above():
-    assert compute(15) == 30
 
-def test_below():
-    assert compute(5) == 7  # Fails when buggy</textarea>
+        <!-- Custom Python Source Code Input -->
+        <div>
+          <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #09090b; display: block; margin-bottom: 4px;">Python Function (Write or paste any code):</label>
+          <textarea id="custom-suite-source" placeholder="def calculate(numbers):&#10;    # Write or paste any function here&#10;    return sum(numbers) / (len(numbers) - 1)" style="width: 100%; height: 115px; font-family: var(--font-mono); font-size: 12px; padding: 10px; border-radius: 6px; border: 1px solid #d4d4d8; outline: none; resize: vertical; line-height: 1.45;"></textarea>
+        </div>
+
+        <!-- English Expected Behavior / Defect Intent Input -->
+        <div>
+          <label style="font-size: 11px; font-weight: 700; text-transform: uppercase; color: #09090b; display: block; margin-bottom: 4px;">Intended Behavior / What is not working (in plain English):</label>
+          <textarea id="custom-suite-intent" placeholder="Describe in plain English how the function should behave vs what is wrong (e.g., 'Given a list of numbers, compute their average. Currently it divides by len - 1 instead of len, causing an off-by-one arithmetic error.')" style="width: 100%; height: 60px; font-family: var(--font-sans); font-size: 12px; padding: 8px 10px; border-radius: 6px; border: 1px solid #d4d4d8; outline: none; resize: vertical; line-height: 1.4;"></textarea>
+        </div>
+
+        <!-- Optional API Key Config (Single Request to Conserve Credits) -->
+        <div style="background: #fafafa; border: 1px solid #e4e4e7; border-radius: 8px; padding: 10px 12px;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px;">
+            <label style="font-size: 11px; font-weight: 700; color: #18181b; text-transform: uppercase;">
+              AI Synthesis Engine (Max 1 Single Request to Conserve Credits):
+            </label>
+            <span style="font-size: 10px; color: #71717a;">Free Built-in Analyzer Available</span>
+          </div>
+          <div style="display: grid; grid-template-columns: 150px 1fr; gap: 8px;">
+            <select id="custom-ai-provider" style="padding: 6px 8px; font-size: 11px; border-radius: 6px; border: 1px solid #d4d4d8; background: #ffffff; outline: none; color: #09090b;">
+              <option value="builtin" selected>Built-in AI Engine (Free)</option>
+              <option value="gemini">Google Gemini API</option>
+              <option value="openai">OpenAI API</option>
+            </select>
+            <input type="password" id="custom-ai-key" placeholder="Optional API Key (Only 1 call will be made)" style="padding: 6px 10px; font-size: 11px; border-radius: 6px; border: 1px solid #d4d4d8; outline: none;">
+          </div>
+        </div>
+
+        <!-- Action: Generate Tests Button (Matte Black Styling) -->
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+          <span style="font-size: 11px; color: #71717a;">Synthesize unit tests from your code and English intent:</span>
+          <button type="button" class="suite-run-btn" id="btn-generate-tests" style="margin-top: 0; background: #111111; color: #ffffff; border: 1px solid #27272a;">
+            <span id="btn-gen-spinner">⚡</span> Analyze & Generate Tests
+          </button>
+        </div>
+
+        <!-- AI Test Generation Results Box -->
+        <div id="ai-test-results-box" style="display: none; background: #09090b; color: #fafafa; border-radius: 8px; padding: 12px; font-family: var(--font-mono); font-size: 11px; line-height: 1.5; border: 1px solid #27272a;">
+          <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; padding-bottom: 6px; border-bottom: 1px solid #27272a;">
+            <span style="color: #ffffff; font-weight: 700; letter-spacing: 0.5px;">AI TEST EXECUTION REPORT</span>
+            <span id="ai-test-status-badge" class="status-tag fail">1 FAILED • 2 PASSED</span>
+          </div>
+          <div id="ai-test-logs" style="max-height: 130px; overflow-y: auto; white-space: pre; color: #d4d4d8;"></div>
+          <div id="ai-fix-preview" style="margin-top: 8px; padding-top: 6px; border-top: 1px solid #27272a; font-size: 11px; color: #a1a1aa;"></div>
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button class="action-link-btn" id="add-custom-cancel-btn" style="padding:6px 14px;">Cancel</button>
-        <button class="suite-run-btn" id="btn-create-custom-suite" style="margin-top:0;">
-          Create & Profile Suite
+      <div class="modal-footer" style="border-top: 1px solid #e4e4e7; padding-top: 12px;">
+        <button class="action-link-btn" id="add-custom-cancel-btn" style="padding: 6px 14px;">Cancel</button>
+        <button class="suite-run-btn" id="btn-create-custom-suite" style="margin-top: 0; background: #111111; color: #ffffff; border: 1px solid #27272a;" disabled>
+          <span>+</span> Save & Profile in COMP
         </button>
       </div>
     </div>

@@ -212,23 +212,24 @@ body {
 .asset-add-btn {
   aspect-ratio: 1 / 1;
   border-radius: 8px;
-  border: 1px dashed #cbd5e1;
-  background: #f8fafc;
+  border: 1px dashed #27272a;
+  background: #18181b;
   display: flex;
   align-items: center;
   justify-content: center;
   cursor: pointer;
-  color: #64748b;
+  color: #f4f4f5;
   font-size: 20px;
-  font-weight: 400;
+  font-weight: 500;
   transition: all 0.18s ease;
 }
 
 .asset-add-btn:hover {
-  background: #f1f5f9;
-  border-color: #94a3b8;
-  color: #0f172a;
+  background: #09090b;
+  border-color: #09090b;
+  color: #ffffff;
   transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25);
 }
 
 /* Sidebar Divider */
